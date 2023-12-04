@@ -48,6 +48,7 @@ class InteropRunner:
     _clients = []
     _tests = []
     _measurements = []
+    _scenario = ""
     _output = ""
     _log_dir = ""
     _save_files = False
@@ -59,6 +60,7 @@ class InteropRunner:
         clients: List[str],
         tests: List[testcases.TestCase],
         measurements: List[testcases.Measurement],
+        scenario: str,
         output: str,
         debug: bool,
         save_files=False,
@@ -78,6 +80,7 @@ class InteropRunner:
         self._servers = servers
         self._clients = clients
         self._implementations = implementations
+        self._scenario = scenario
         self._output = output
         self._log_dir = log_dir
         self._save_files = save_files
@@ -246,6 +249,7 @@ class InteropRunner:
                 x.abbreviation(): {
                     "name": x.name(),
                     "desc": x.desc(),
+                    "scenario": self._scenario if self._scenario else x.scenario(),
                 }
                 for x in self._tests + self._measurements
             },
@@ -348,6 +352,9 @@ class InteropRunner:
 
         reqs = " ".join([testcase.urlprefix() + p for p in testcase.get_paths()])
         logging.debug("Requests: %s", reqs)
+        scenario = testcase.scenario()
+        if self._scenario:
+            scenario = self._scenario
         params = (
             "WAITFORSERVER=server:443 "
             "CERTS=" + testcase.certs_dir() + " "
@@ -362,7 +369,7 @@ class InteropRunner:
             "SERVER=" + self._implementations[server]["image"] + " "
             'REQUESTS="' + reqs + '" '
             'VERSION="' + testcases.QUIC_VERSION + '" '
-        ).format(testcase.scenario())
+        ).format(scenario)
         params += " ".join(testcase.additional_envs())
         containers = "sim client server " + " ".join(testcase.additional_containers())
         cmd = (
@@ -445,6 +452,7 @@ class InteropRunner:
             (datetime.now() - start_time).total_seconds(),
             str(status),
         )
+        logging.debug("Scenario: %s", scenario)
 
         # measurements also have a value
         if hasattr(testcase, "result"):

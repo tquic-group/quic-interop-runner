@@ -85,7 +85,7 @@
     "role": "both"
   },
   "tquic": {
-    "image": "tquic_apps:v1",
+    "image": "tquicgroup/tquic:latest",
     "url": "https://github.com/Tencent/tquic",
     "role": "both"
   }

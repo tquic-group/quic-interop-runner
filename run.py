@@ -54,6 +54,11 @@ def main():
             help="replace path of implementation. Example: -r myquicimpl=dockertagname",
         )
         parser.add_argument(
+            "-n",
+            "--scenario",
+            help="replace scenario for the ns3 simulator. Example: -n \"drop-rate --delay=15ms --bandwidth=10Mbps --queue=25 --rate_to_server=2 --rate_to_client=2\"",
+        )
+        parser.add_argument(
             "-l",
             "--log-dir",
             help="log directory",
@@ -128,6 +133,7 @@ def main():
         clients=get_impls(get_args().client, client_implementations, "Client"),
         tests=t[0],
         measurements=t[1],
+        scenario=get_args().scenario,
         output=get_args().json,
         debug=get_args().debug,
         log_dir=get_args().log_dir,
