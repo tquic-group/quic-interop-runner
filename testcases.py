@@ -1570,10 +1570,6 @@ class MeasurementGoodput(Measurement):
         return "Measures connection goodput over a 10Mbps link."
 
     @staticmethod
-    def timeout() -> int:
-        return 180
-
-    @staticmethod
     def repetitions() -> int:
         return 5
 
@@ -1621,6 +1617,10 @@ class MeasurementGoodputTiny(MeasurementGoodput):
     def abbreviation():
         return "GT"
 
+    @staticmethod
+    def repetitions() -> int:
+        return 10
+
 
 class MeasurementGoodputSmall(MeasurementGoodput):
     FILESIZE = 1 * MB
@@ -1633,6 +1633,14 @@ class MeasurementGoodputSmall(MeasurementGoodput):
     def abbreviation():
         return "GS"
 
+    @staticmethod
+    def timeout() -> int:
+        return 180
+
+    @staticmethod
+    def repetitions() -> int:
+        return 10
+
 
 class MeasurementGoodputMeduim(MeasurementGoodput):
     FILESIZE = 10 * MB
@@ -1644,6 +1652,14 @@ class MeasurementGoodputMeduim(MeasurementGoodput):
     @staticmethod
     def abbreviation():
         return "GM"
+
+    @staticmethod
+    def timeout() -> int:
+        return 180
+
+    @staticmethod
+    def repetitions() -> int:
+        return 10
 
 
 class MeasurementGoodputLarge(MeasurementGoodput):
@@ -1660,6 +1676,10 @@ class MeasurementGoodputLarge(MeasurementGoodput):
     @staticmethod
     def timeout() -> int:
         return 300
+
+    @staticmethod
+    def repetitions() -> int:
+        return 10
 
 
 class MeasurementCrossTraffic(MeasurementGoodput):

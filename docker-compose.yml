@@ -42,6 +42,7 @@ services:
       - QLOGDIR=/logs/qlog/
       - TESTCASE=$TESTCASE_SERVER
       - VERSION=$VERSION
+      - CONGESTION=$CONGESTION
     depends_on:
       - sim
     cap_add: 
@@ -71,6 +72,7 @@ services:
       - TESTCASE=$TESTCASE_CLIENT
       - REQUESTS=$REQUESTS
       - VERSION=$VERSION
+      - CONGESTION=$CONGESTION
     depends_on:
       - sim
     cap_add: 

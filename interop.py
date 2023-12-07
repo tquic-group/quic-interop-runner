@@ -29,6 +29,7 @@ def random_string(length: int):
 class MeasurementResult:
     result = TestResult
     details = str
+    data = []
 
 
 class LogFileFormatter(logging.Formatter):
@@ -48,6 +49,7 @@ class InteropRunner:
     _clients = []
     _tests = []
     _measurements = []
+    _congestion = ""
     _scenario = ""
     _output = ""
     _log_dir = ""
@@ -60,6 +62,7 @@ class InteropRunner:
         clients: List[str],
         tests: List[testcases.TestCase],
         measurements: List[testcases.Measurement],
+        congestion: str,
         scenario: str,
         output: str,
         debug: bool,
@@ -80,6 +83,7 @@ class InteropRunner:
         self._servers = servers
         self._clients = clients
         self._implementations = implementations
+        self._congestion = congestion
         self._scenario = scenario
         self._output = output
         self._log_dir = log_dir
@@ -250,6 +254,7 @@ class InteropRunner:
                     "name": x.name(),
                     "desc": x.desc(),
                     "scenario": self._scenario if self._scenario else x.scenario(),
+                    "congestion": self._congestion,
                 }
                 for x in self._tests + self._measurements
             },
@@ -286,6 +291,7 @@ class InteropRunner:
                             "abbr": measurement.abbreviation(),
                             "result": res.result.value,
                             "details": res.details,
+                            "data": res.data,
                         }
                     )
                 out["measurements"].append(measurements)
@@ -370,6 +376,8 @@ class InteropRunner:
             'REQUESTS="' + reqs + '" '
             'VERSION="' + testcases.QUIC_VERSION + '" '
         ).format(scenario)
+        if self._congestion:
+            params += "CONGESTION={} ".format(self._congestion)
         params += " ".join(testcase.additional_envs())
         containers = "sim client server " + " ".join(testcase.additional_containers())
         cmd = (
@@ -452,7 +460,7 @@ class InteropRunner:
             (datetime.now() - start_time).total_seconds(),
             str(status),
         )
-        logging.debug("Scenario: %s", scenario)
+        logging.debug("Scenario: %s Congestion: %s", scenario, self._congestion)
 
         # measurements also have a value
         if hasattr(testcase, "result"):
@@ -472,6 +480,7 @@ class InteropRunner:
                 res = MeasurementResult()
                 res.result = result
                 res.details = ""
+                res.data = []
                 return res
             values.append(value)
 
@@ -481,6 +490,7 @@ class InteropRunner:
         res.details = "{:.0f} (± {:.0f}) {}".format(
             statistics.mean(values), statistics.stdev(values), test.unit()
         )
+        res.data = values
         return res
 
     def run(self):
