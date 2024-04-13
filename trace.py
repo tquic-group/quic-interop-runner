@@ -158,6 +158,48 @@ class TraceAnalyzer:
                     packets.append(layer)
         return packets, first, last
 
+    def get_session_times(
+        self, direction: Direction = Direction.ALL
+    ) -> Tuple[List, datetime.datetime, datetime.datetime]:
+        """Get first and last times for a 1RTT request sent on a new connection."""
+        first, last = 0, 0
+        for packet in self._get_packets(self._get_direction_filter(direction) + "quic"):
+            for layer in packet.layers:
+                if first == 0:
+                    first = packet.sniff_time
+                if (
+                    layer.layer_name == "quic"
+                    and not hasattr(layer, "long_packet_type")
+                    and not hasattr(layer, "long_packet_type_v2")
+                ):
+                    last = packet.sniff_time
+        return first, last
+
+    def get_0rtt_times(
+        self, direction: Direction = Direction.ALL
+    ) -> Tuple[List, datetime.datetime, datetime.datetime]:
+        """Get first and last times for a 0RTT request sent on new connection."""
+        first, last = 0, 0
+
+        packet_types = (WIRESHARK_PACKET_TYPES[PacketType.ZERORTT], WIRESHARK_PACKET_TYPES[PacketType.ZERORTT])
+        for packet in self._get_packets(
+            self._get_direction_filter(direction)
+            + "(quic.long.packet_type==%s || quic.long.packet_type_v2==%s)" % packet_types
+        ):
+            if first == 0:
+                first = packet.sniff_time
+                break
+
+        for packet in self._get_packets(self._get_direction_filter(direction) + "quic"):
+            for layer in packet.layers:
+                if (
+                    layer.layer_name == "quic"
+                    and not hasattr(layer, "long_packet_type")
+                    and not hasattr(layer, "long_packet_type_v2")
+                ):
+                    last = packet.sniff_time
+        return first, last
+
     def get_vnp(self, direction: Direction = Direction.ALL) -> List:
         return self._get_packets(
             self._get_direction_filter(direction) + "quic.version==0"

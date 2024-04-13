@@ -1710,6 +1710,99 @@ class MeasurementCrossTraffic(MeasurementGoodput):
         return ["iperf_server", "iperf_client"]
 
 
+class MeasurementFCT(Measurement):
+    FILESIZE = 1 * KB
+    NUM_HANDSHAKES = 1
+    _result = 0.0
+
+    @staticmethod
+    def name():
+        return "handshake_time"
+
+    @staticmethod
+    def unit() -> str:
+        return "ms"
+
+    @staticmethod
+    def testname(p: Perspective):
+        return "transfer"
+
+    @staticmethod
+    def abbreviation():
+        return "T"
+
+    @staticmethod
+    def desc():
+        return "Measures flow complete time over a 10Mbps link."
+
+    @staticmethod
+    def repetitions() -> int:
+        return 30
+
+    def get_paths(self):
+        self._files = [self._generate_random_file(self.FILESIZE)]
+        return self._files
+
+    @abc.abstractmethod
+    def get_times(self):
+        pass
+
+    def check(self) -> TestResult:
+        num_handshakes = self._count_handshakes()
+        if num_handshakes != self.NUM_HANDSHAKES:
+            logging.info("Expected exactly 1 handshake. Got: %d", num_handshakes)
+            return TestResult.FAILED
+        if not self._check_version_and_files():
+            return TestResult.FAILED
+
+        first, last = self.get_times()
+        if last - first == 0:
+            return TestResult.FAILED
+        time = (last - first) / timedelta(milliseconds=1)
+        logging.debug(
+            "Transfering %d KB took %d ms.",
+            self.FILESIZE / KB,
+            time,
+        )
+        self._result = time
+        return TestResult.SUCCEEDED
+
+    def result(self) -> float:
+        return self._result
+
+
+class MeasurementFCT1RTT(MeasurementFCT):
+    @staticmethod
+    def name():
+        return "fct1rtt"
+
+    def get_times(self):
+        return self._client_trace().get_session_times()
+
+
+class MeasurementFCT0RTT(MeasurementFCT):
+    NUM_FILES = 2
+    NUM_HANDSHAKES = 2
+
+    @staticmethod
+    def name():
+        return "fct0rtt"
+
+    @staticmethod
+    def testname(p: Perspective):
+        return "zerortt"
+
+    def get_paths(self):
+        for _ in range(self.NUM_FILES):
+            self._files.append(
+                self._generate_random_file(self.FILESIZE)
+            )
+        return self._files
+
+    def get_times(self):
+        return self._client_trace().get_0rtt_times()
+
+
 TESTCASES = [
     TestCaseHandshake,
     TestCaseTransfer,
@@ -1744,4 +1837,6 @@ MEASUREMENTS = [
     MeasurementGoodputMeduim,
     MeasurementGoodputLarge,
     MeasurementCrossTraffic,
+    MeasurementFCT1RTT,
+    MeasurementFCT0RTT,
 ]
