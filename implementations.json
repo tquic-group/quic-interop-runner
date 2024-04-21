@@ -88,5 +88,10 @@
     "image": "tquicgroup/tquic:latest",
     "url": "https://github.com/Tencent/tquic",
     "role": "both"
+  },
+  "gquiche": {
+    "image": "tquicgroup/qirgq:latest",
+    "url": "https://github.com/iyangsj/quiche",
+    "role": "both"
   }
 }
