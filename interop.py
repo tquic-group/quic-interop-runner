@@ -89,7 +89,7 @@ class InteropRunner:
         self._log_dir = log_dir
         self._save_files = save_files
         if len(self._log_dir) == 0:
-            self._log_dir = "logs_{:%Y-%m-%dT%H:%M:%S}".format(self._start_time)
+            self._log_dir = "logs_{:%Y-%m-%dT%H-%M-%S}".format(self._start_time)
         if os.path.exists(self._log_dir):
             sys.exit("Log dir " + self._log_dir + " already exists.")
         logging.info("Saving logs to %s.", self._log_dir)
